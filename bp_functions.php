@@ -676,6 +676,38 @@ function event_espresso_buddypress_add_event($event_id) {
 
 }
 
+function event_espresso_buddypress_add_user_to_event($event_id, $userid) {
+	// If BuddyPress is installed, add an item to the activity stream
+	global $wpdb;
+	global $bp;
+	
+	if ( function_exists('bp_is_active') && bp_is_active( 'activity' ) ) {
+
+		// get title of event to add into activity
+		$event_name = $wpdb->get_var( $wpdb->prepare( "SELECT event_name FROM " . EVENTS_DETAIL_TABLE . " WHERE id = " .$event_id ) );
+
+		$component = "event_espresso";
+		$type = "register_event";
+
+		$entry = array(
+			'action' =>  sprintf( __( '%1$s registered for %2$s', 'event_espresso' ), bp_core_get_userlink( $bp->loggedin_user->id ), $event_name ),
+			'component' => $component,
+			'type' => $type,
+			'primary_link' => bp_core_get_user_domain( $user_id ),
+			'user_id' => $bp->loggedin_user->id,
+			'item_id' => $event_id,
+			'secondary_item_id' => $event_id
+		);
+
+
+		return bp_activity_add( apply_filters( 'event_espresso_record_activity', $entry ) );
+
+	}
+	
+}
+
+add_action ( 'action_hook_espresso_buddypress_add_user_to_event', 'event_espresso_buddypress_add_user_to_event', 10, 2 );
+
 function event_espresso_event_add_register_button() {
 	global $events_template;
 	
